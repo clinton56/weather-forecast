@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-class City {
+public class CityModel {
     long id;
     String name;
     String country;

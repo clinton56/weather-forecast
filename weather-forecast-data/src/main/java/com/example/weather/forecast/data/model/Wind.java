@@ -9,6 +9,6 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-class Wind {
+public class Wind {
     private double speed;
 }

@@ -1,6 +1,7 @@
 package com.example.weather.forecast.data.controller;
 
 import com.example.weather.forecast.data.model.WeatherResponse;
+import com.example.weather.forecast.data.service.WeatherService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,11 +26,13 @@ public class WeatherDataController {
 
     private final RestTemplate restTemplate;
     private final String forecastUrl;
+    private final WeatherService weatherService;
 
     @Autowired
-    public WeatherDataController(RestTemplate restTemplate, @Value(value = "${forecast.data.url}") final String forecastUrl) {
+    public WeatherDataController(RestTemplate restTemplate, @Value(value = "${forecast.data.url}") final String forecastUrl, WeatherService weatherService) {
         this.restTemplate = restTemplate;
         this.forecastUrl = forecastUrl;
+        this.weatherService = weatherService;
     }
 
     @HystrixCommand(fallbackMethod = "weatherDataFallback")
@@ -43,7 +46,10 @@ public class WeatherDataController {
                 });
         return Optional.ofNullable(response.getBody())
                 .filter(CollectionUtils::isNotEmpty)
-                .map(it -> new ResponseEntity<>(it, HttpStatus.OK))
+                .map(it -> {
+                    weatherService.save(it);
+                    return new ResponseEntity<>(it, HttpStatus.OK);
+                })
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 

@@ -1,6 +1,7 @@
 package com.example.weather.forecast.data.controller;
 
 import com.example.weather.forecast.data.model.WeatherResponse;
+import com.example.weather.forecast.data.service.WeatherService;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.mockito.Mock;
@@ -29,14 +30,17 @@ import static org.mockito.Mockito.verify;
 public class WeatherDataControllerTest {
 
     private static final int ONCE = 1;
+    private static final int ZERO = 0;
     @Mock
     private RestTemplate restTemplateMock;
+    @Mock
+    private WeatherService weatherServiceMock;
     private WeatherDataController controller;
 
     @BeforeTest
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        controller = new WeatherDataController(restTemplateMock, StringUtils.EMPTY);
+        controller = new WeatherDataController(restTemplateMock, StringUtils.EMPTY, weatherServiceMock);
     }
 
     @AfterMethod
@@ -60,6 +64,7 @@ public class WeatherDataControllerTest {
         // then
         verify(restTemplateMock, times(ONCE)).exchange(StringUtils.EMPTY, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<WeatherResponse>>() {});
+        verify(weatherServiceMock, times(ONCE)).save(responseEntityStub.getBody());
         assertThat(result.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(result.getBody(), is(notNullValue()));
     }
@@ -79,6 +84,7 @@ public class WeatherDataControllerTest {
         // then
         verify(restTemplateMock, times(ONCE)).exchange(StringUtils.EMPTY, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<WeatherResponse>>() {});
+        verify(weatherServiceMock, times(ZERO)).save(responseEntityStub.getBody());
         assertThat(result.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
         assertThat(result.getBody(), is(nullValue()));
     }

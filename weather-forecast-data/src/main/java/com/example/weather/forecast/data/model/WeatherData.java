@@ -9,8 +9,8 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-class WeatherData {
-    private WeatherForecast main;
+public class WeatherData {
+    private WeatherForecastModel main;
     private Wind wind;
     private String dt_txt;
 }

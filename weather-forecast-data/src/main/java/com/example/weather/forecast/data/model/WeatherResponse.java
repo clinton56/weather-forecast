@@ -14,7 +14,7 @@ import java.util.List;
 public class WeatherResponse {
     private int cod;
     private List<WeatherData> list;
-    private City city;
+    private CityModel city;
 
     public boolean isSuccess() {
         return 200 == cod;

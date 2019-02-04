@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-class WeatherForecast {
+public class WeatherForecastModel {
     private double temp;
     private double temp_min;
     private double temp_max;
