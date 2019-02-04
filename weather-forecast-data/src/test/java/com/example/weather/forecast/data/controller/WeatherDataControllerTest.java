@@ -2,6 +2,7 @@ package com.example.weather.forecast.data.controller;
 
 import com.example.weather.forecast.data.model.WeatherResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -17,9 +18,7 @@ import org.testng.annotations.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.BDDMockito.given;
@@ -82,6 +81,27 @@ public class WeatherDataControllerTest {
                 new ParameterizedTypeReference<List<WeatherResponse>>() {});
         assertThat(result.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
         assertThat(result.getBody(), is(nullValue()));
+    }
+
+    @Test
+    public void testFallbackMethodWhenError() {
+        // given - when
+        Throwable throwableMock = Mockito.mock(Throwable.class);
+        given(throwableMock.getMessage()).willReturn("Some error message");
+        ResponseEntity<List<WeatherResponse>> result = controller.weatherDataFallback(throwableMock);
+
+        // then
+        assertThat(result.getStatusCode(), Matchers.is(Matchers.equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));
+        verify(throwableMock, times(ONCE)).getMessage();
+    }
+
+    @Test
+    public void testFallbackMethodWhenThrowableIsNull() {
+        // given - when
+        ResponseEntity<List<WeatherResponse>> result = controller.weatherDataFallback(null);
+
+        // then
+        assertThat(result.getStatusCode(), Matchers.is(Matchers.equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));
     }
 
 }
