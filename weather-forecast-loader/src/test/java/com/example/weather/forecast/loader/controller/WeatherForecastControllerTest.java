@@ -2,6 +2,7 @@ package com.example.weather.forecast.loader.controller;
 
 import com.example.weather.forecast.loader.model.WeatherResponse;
 import com.example.weather.forecast.loader.service.WeatherService;
+import org.apache.commons.lang3.StringUtils;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -79,6 +80,27 @@ public class WeatherForecastControllerTest {
         assertThat(result.getBody(), is(nullValue()));
         assertThat(result.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
         verify(weatherServiceMock, times(ONCE)).getDailyFor(WeatherService.City.LONDON);
+    }
+
+    @Test
+    public void testFallbackMethodForOneCity() {
+        // given - when
+        Throwable throwableMock = Mockito.mock(Throwable.class);
+        given(throwableMock.getMessage()).willReturn("Some error message");
+        ResponseEntity<WeatherResponse> result = controller.weatherResponseSingleCityFallback(StringUtils.EMPTY, throwableMock);
+
+        // then
+        assertThat(result.getStatusCode(), is(equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));
+        verify(throwableMock, times(ONCE)).getMessage();
+    }
+
+    @Test
+    public void testFallbackMethodForOneCityWhenThrowableIsNull() {
+        // given - when
+        ResponseEntity<WeatherResponse> result = controller.weatherResponseSingleCityFallback(StringUtils.EMPTY, null);
+
+        // then
+        assertThat(result.getStatusCode(), is(equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));
     }
 
 }
