@@ -2,9 +2,13 @@ package com.example.weather.forecast.loader.service;
 
 
 import com.example.weather.forecast.loader.model.WeatherResponse;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,12 +20,27 @@ import static org.mockito.Mockito.verify;
 
 public class WeatherServiceBeanTest {
 
+    @Mock
+    private RestTemplate restTemplateMock;
+    @Mock
+    private WeatherResponse weatherResponseMock;
+    private WeatherService service;
+
+    @BeforeTest
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        service = new WeatherServiceBean(restTemplateMock);
+    }
+
+    @AfterMethod
+    public void resetMocks() {
+        Mockito.reset(restTemplateMock, weatherResponseMock);
+    }
+
+
     @Test
     public void testGettingForecastHappyPath() {
         // given
-        RestTemplate restTemplateMock = Mockito.mock(RestTemplate.class);
-        WeatherService service = new WeatherServiceBean(restTemplateMock);
-        WeatherResponse weatherResponseMock = Mockito.mock(WeatherResponse.class);
         given(restTemplateMock.getForObject(any(String.class), any(), any(),
                 any(), any())).willReturn(weatherResponseMock);
 
@@ -36,8 +55,6 @@ public class WeatherServiceBeanTest {
     @Test(expectedExceptions = RestClientException.class)
     public void testWhenGettingForecastThrowsException() {
         // given
-        RestTemplate restTemplateMock = Mockito.mock(RestTemplate.class);
-        WeatherService service = new WeatherServiceBean(restTemplateMock);
         given(restTemplateMock.getForObject(any(), any(), any(),
                 any(), any())).willThrow(RestClientException.class);
 
