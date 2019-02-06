@@ -1,16 +1,16 @@
 package com.example.weather.forecast.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CityModel {
-    long id;
-    String name;
-    String country;
+public class WeatherDataDTO {
+    private WeatherForecastDTO main;
+    private WindDTO wind;
+    private String dt_txt;
 }

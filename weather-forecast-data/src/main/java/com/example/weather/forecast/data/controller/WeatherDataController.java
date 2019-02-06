@@ -1,6 +1,7 @@
 package com.example.weather.forecast.data.controller;
 
-import com.example.weather.forecast.data.model.WeatherResponse;
+import com.example.weather.forecast.data.entity.WeatherForecast;
+import com.example.weather.forecast.data.model.WeatherResponseDTO;
 import com.example.weather.forecast.data.service.WeatherService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,12 +39,12 @@ public class WeatherDataController {
 
     @HystrixCommand(fallbackMethod = "weatherDataFallback")
     @RequestMapping(path = "/weather/forecast/update", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<WeatherResponse>> persistWeatherForecast() {
-        ResponseEntity<List<WeatherResponse>> response = restTemplate.exchange(
+    public ResponseEntity<List<WeatherResponseDTO>> persistWeatherForecast() {
+        ResponseEntity<List<WeatherResponseDTO>> response = restTemplate.exchange(
                 forecastUrl,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<WeatherResponse>>() {
+                new ParameterizedTypeReference<List<WeatherResponseDTO>>() {
                 });
         return Optional.ofNullable(response.getBody())
                 .filter(CollectionUtils::isNotEmpty)
@@ -53,7 +55,16 @@ public class WeatherDataController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    public ResponseEntity<List<WeatherResponse>> weatherDataFallback(Throwable e) {
+    @RequestMapping(path = "/weather/forecast/search/city")
+    public ResponseEntity<List<WeatherForecast>> searchForecastByCity(@Param("city") String city) {
+        List<WeatherForecast> weatherForecastList = weatherService.findByCity(city);
+        if (CollectionUtils.isNotEmpty(weatherForecastList)) {
+            return new ResponseEntity<>(weatherForecastList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<List<WeatherResponseDTO>> weatherDataFallback(Throwable e) {
         Optional.ofNullable(e)
                 .map(Throwable::getMessage)
                 .ifPresent(log::error);
