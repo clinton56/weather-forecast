@@ -24,6 +24,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
+@RequestMapping(path = "/data")
 public class WeatherDataController {
 
     private final RestTemplate restTemplate;
@@ -38,7 +39,7 @@ public class WeatherDataController {
     }
 
     @HystrixCommand(fallbackMethod = "weatherDataFallback")
-    @RequestMapping(path = "/weather/forecast/update", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/update", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WeatherResponseDTO>> persistWeatherForecast() {
         ResponseEntity<List<WeatherResponseDTO>> response = restTemplate.exchange(
                 forecastUrl,
@@ -55,7 +56,7 @@ public class WeatherDataController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @RequestMapping(path = "/weather/forecast/search/city")
+    @RequestMapping(path = "/search/city")
     public ResponseEntity<List<WeatherForecast>> searchForecastByCity(@Param("city") String city) {
         List<WeatherForecast> weatherForecastList = weatherService.findByCity(city);
         if (CollectionUtils.isNotEmpty(weatherForecastList)) {

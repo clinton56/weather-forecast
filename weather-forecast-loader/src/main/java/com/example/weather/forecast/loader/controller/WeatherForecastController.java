@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
 @RestController
+@RequestMapping(path = "/load")
 public class WeatherForecastController {
 
     private final WeatherService weatherService;
