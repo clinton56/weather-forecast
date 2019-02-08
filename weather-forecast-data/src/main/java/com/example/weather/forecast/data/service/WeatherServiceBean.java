@@ -41,4 +41,12 @@ public class WeatherServiceBean implements WeatherService {
         return weatherRepository.
                 findByCityCityName(cityName);
     }
+
+    @Override
+    public List<String> getAvailableCities() {
+        return cityRepository.findAll()
+                .stream()
+                .map(City::getCityName)
+                .collect(Collectors.toList());
+    }
 }

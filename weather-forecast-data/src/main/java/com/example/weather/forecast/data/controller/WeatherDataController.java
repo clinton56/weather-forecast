@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class WeatherDataController {
 
     @HystrixCommand(fallbackMethod = "weatherDataFallback")
     @RequestMapping(path = "/update", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<WeatherResponseDTO>> persistWeatherForecast() {
+    public ResponseEntity<String> persistWeatherForecast() {
         ResponseEntity<List<WeatherResponseDTO>> response = restTemplate.exchange(
                 forecastUrl,
                 HttpMethod.GET,
@@ -51,9 +52,18 @@ public class WeatherDataController {
                 .filter(CollectionUtils::isNotEmpty)
                 .map(it -> {
                     weatherService.save(it);
-                    return new ResponseEntity<>(it, HttpStatus.OK);
+                    return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
                 })
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElse(new ResponseEntity<>("FAILURE", HttpStatus.NOT_FOUND));
+    }
+
+    @RequestMapping(path = "/cities")
+    public ResponseEntity<List<String>> getAvailableCities() {
+        List<String> cities = weatherService.getAvailableCities();
+        if (CollectionUtils.isNotEmpty(cities)) {
+            return new ResponseEntity<>(cities, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping(path = "/search/city")
@@ -62,14 +72,14 @@ public class WeatherDataController {
         if (CollectionUtils.isNotEmpty(weatherForecastList)) {
             return new ResponseEntity<>(weatherForecastList, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND);
     }
 
-    public ResponseEntity<List<WeatherResponseDTO>> weatherDataFallback(Throwable e) {
+    public ResponseEntity<String> weatherDataFallback(Throwable e) {
         Optional.ofNullable(e)
                 .map(Throwable::getMessage)
                 .ifPresent(log::error);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("FAILURE", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

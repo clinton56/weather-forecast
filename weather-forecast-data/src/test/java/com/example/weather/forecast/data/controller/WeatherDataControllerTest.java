@@ -60,7 +60,7 @@ public class WeatherDataControllerTest {
                 .willReturn(responseEntityStub);
 
         // when
-        ResponseEntity<List<WeatherResponseDTO>> result = controller.persistWeatherForecast();
+        ResponseEntity<String> result = controller.persistWeatherForecast();
 
         // then
         verify(restTemplateMock, times(ONCE)).exchange(StringUtils.EMPTY, HttpMethod.GET, null,
@@ -80,14 +80,14 @@ public class WeatherDataControllerTest {
                 .willReturn(responseEntityStub);
 
         // when
-        ResponseEntity<List<WeatherResponseDTO>> result = controller.persistWeatherForecast();
+        ResponseEntity<String> result = controller.persistWeatherForecast();
 
         // then
         verify(restTemplateMock, times(ONCE)).exchange(StringUtils.EMPTY, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<WeatherResponseDTO>>() {});
         verify(weatherServiceMock, times(ZERO)).save(responseEntityStub.getBody());
         assertThat(result.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
-        assertThat(result.getBody(), is(nullValue()));
+        assertThat(result.getBody(), is(equalTo("FAILURE")));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class WeatherDataControllerTest {
         // given - when
         Throwable throwableMock = Mockito.mock(Throwable.class);
         given(throwableMock.getMessage()).willReturn("Some error message");
-        ResponseEntity<List<WeatherResponseDTO>> result = controller.weatherDataFallback(throwableMock);
+        ResponseEntity<String> result = controller.weatherDataFallback(throwableMock);
 
         // then
         assertThat(result.getStatusCode(), Matchers.is(Matchers.equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));
@@ -105,7 +105,7 @@ public class WeatherDataControllerTest {
     @Test
     public void testFallbackMethodWhenThrowableIsNull() {
         // given - when
-        ResponseEntity<List<WeatherResponseDTO>> result = controller.weatherDataFallback(null);
+        ResponseEntity<String> result = controller.weatherDataFallback(null);
 
         // then
         assertThat(result.getStatusCode(), Matchers.is(Matchers.equalTo(HttpStatus.INTERNAL_SERVER_ERROR)));

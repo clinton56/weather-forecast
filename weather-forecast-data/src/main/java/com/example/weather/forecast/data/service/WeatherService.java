@@ -10,4 +10,6 @@ public interface WeatherService {
     void save(List<WeatherResponseDTO> weatherResponsDTOS);
 
     List<WeatherForecast> findByCity(String cityName);
+
+    List<String> getAvailableCities();
 }
